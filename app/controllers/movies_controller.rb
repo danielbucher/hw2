@@ -7,6 +7,8 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @all_ratings = Movie.get_ratings
+    
     if params[:release_date]
       @movies = Movie.order_by_release_date
       @hilite = 'release_date'
