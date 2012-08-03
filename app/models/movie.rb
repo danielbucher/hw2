@@ -36,26 +36,16 @@ class Movie < ActiveRecord::Base
      
     else #Has one or none param
       
-      if args.empty? 
-        all
-      elsif args.include? 'release_date'
-        order("release_date ASC")
-      elsif args.include? 'title'
-        order("title ASC")
+      if (args.empty? || args.include?('title') || args.include?('release_date'))
+        []
+      #elsif args.include? 'release_date'
+      #  order("release_date ASC")
+      #elsif args.include? 'title'
+      #  order("title ASC")
       else #The param passed must be an Array of ratings
         where("rating IN (?)", args[0])
       end 
           
-    end
-  end
-  
-  def self.order_by(*args)
-    if args[0] == 'title'
-      order("title ASC")
-    elsif args[0] == 'release_date'
-      order("release_date ASC")
-    else
-      all
     end
   end
   
