@@ -8,17 +8,35 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.get_ratings
-    
-    if params[:release_date]
-      @movies = Movie.order_by_release_date
-      @hilite = 'release_date'
-    elsif params[:title]
-      @movies = Movie.order_by_title
-      @hilite = 'title'
-    else
-      @movies = Movie.all
-      @hilite = nil
-    end
+
+   if params[:ratings] #Ratings to filter
+
+     @checked_ratings = params[:ratings].keys
+     
+     if params[:order_option] #Has order_option
+       
+       @movies = Movie.order_and_filter_by(params[:order_option], @checked_ratings)
+
+     else #Has no order_option
+       
+       @movies = Movie.order_and_filter_by(@checked_ratings)
+       
+     end      
+     
+   else #No ratings
+     
+     if params[:order_option] #Has order_option
+       
+       @movies = Movie.order_and_filter_by params[:order_option]
+
+     else #Has no order_option
+       
+       @movies = Movie.order_and_filter_by
+       
+     end 
+   
+   end  #End major conditional
+
   end
 
   def new

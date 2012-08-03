@@ -6,12 +6,57 @@ class Movie < ActiveRecord::Base
     @@ratings
   end
   
-  def self.order_by_title
-    order("title ASC")
+  def self.order_and_filter_by(*args)
+    if args[1] #Has both order option and ratings to filter (in that order)
+      
+      filtered_movies = Movie.where("rating IN (?)", args[1])  
+      if args.include?('title')
+        
+        filtered_and_ordered_movies = []
+        
+        order("title ASC").each do |m|
+          if filtered_movies.include? m
+            filtered_and_ordered_movies << m
+          end          
+        end
+        
+        filtered_and_ordered_movies
+      elsif args.include?('release_date')
+        
+        filtered_and_ordered_movies = []
+        
+        order("release_date ASC").each do |m|
+          if filtered_movies.include? m
+            filtered_and_ordered_movies << m
+          end          
+        end
+        
+        filtered_and_ordered_movies
+      end     
+     
+    else #Has one or none param
+      
+      if args.empty? 
+        all
+      elsif args.include? 'release_date'
+        order("release_date ASC")
+      elsif args.include? 'title'
+        order("title ASC")
+      else #The param passed must be an Array of ratings
+        where("rating IN (?)", args[0])
+      end 
+          
+    end
   end
   
-  def self.order_by_release_date
-    order("release_date ASC")
+  def self.order_by(*args)
+    if args[0] == 'title'
+      order("title ASC")
+    elsif args[0] == 'release_date'
+      order("release_date ASC")
+    else
+      all
+    end
   end
   
 end
