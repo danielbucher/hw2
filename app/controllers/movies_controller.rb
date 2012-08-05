@@ -7,37 +7,46 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = Movie.get_ratings
+      @all_ratings = Movie.get_ratings
 
-   if params[:ratings] #Ratings to filter
-
-     @checked_ratings = params[:ratings].keys
+      if params[:commit] == 'Refresh' #Check if there was a form submition
+          if params[:ratings] #New ratings to filter    
+              session[:ratings] = params[:ratings]         
+          elsif session[:ratings] #No rates checked       
+              session.delete(:ratings)       
+          end 
+          
+          flash.keep
+          redirect_to movies_path(:ratings => session[:ratings], :order_option => session[:order_option])
+      elsif session[:ratings]       
+          @checked_ratings = session[:ratings].keys
      
-     if params[:order_option] #Has order_option
-       
-       @movies = Movie.order_and_filter_by(params[:order_option], @checked_ratings)
+          if params[:order_option] #Has order_option
+              session[:order_option] = params[:order_option]       
+              @movies = Movie.order_and_filter_by(session[:order_option], @checked_ratings)
+          elsif session[:order_option] #Has no order_option     
+              @movies = Movie.order_and_filter_by(session[:order_option], @checked_ratings)     
+          else         
+              @movies = Movie.order_and_filter_by(@checked_ratings)       
+          end
+          
+          unless params[:ratings]
+              flash.keep
+              redirect_to movies_path(:ratings => session[:ratings], :order_option => session[:order_option]) 
+          end               
+      else #No ratings     
+          if params[:order_option] #Has order_option
+              session[:order_option] = params[:order_option]        
+              @movies = Movie.order_and_filter_by session[:order_option]
+          elsif session[:order_option] #Has no order_option on params list            
+              flash.keep
+              redirect_to movies_path(:ratings => session[:ratings], :order_option => session[:order_option])      
+          else       
+              @movies = Movie.order_and_filter_by       
+          end   
+      end  #End major conditional
 
-     else #Has no order_option
-       
-       @movies = Movie.order_and_filter_by(@checked_ratings)
-       
-     end      
-     
-   else #No ratings
-     
-     if params[:order_option] #Has order_option
-       
-       @movies = Movie.order_and_filter_by params[:order_option]
-
-     else #Has no order_option
-       
-       @movies = Movie.order_and_filter_by
-       
-     end 
-   
-   end  #End major conditional
-
-  end
+  end #End action
 
   def new
     # default: render 'new' template
